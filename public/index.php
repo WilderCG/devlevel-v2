@@ -34,9 +34,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['completar_tarea_id'])
     $tareaId = (int)$_POST['completar_tarea_id'];
     $puntos = (int)$_POST['puntos_tarea'];
     
-    // Ejecutamos la transacción ACID
+    // ejecutamos la transacción ACID
     if ($levelService->completarTarea($usuarioId, $tareaId, $puntos, $nivelUsuario)) {
-        // CE 6.f y PRG: Recargamos los datos del usuario en memoria para que vea sus nuevos puntos inmediatamente
+        // recargamos los datos del usuario en memoria para que vea sus nuevos puntos inmediatamente
         $usuarioActualizado = $userRepo->obtenerPorUsername($authService->getRol()); 
         
         $mensajeExito = "¡Misión completada! Has ganado $puntos XP.";
@@ -45,17 +45,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['completar_tarea_id'])
     }
 }
 
-// 3. CE 6.d: Lógica de Paginación en servidor (LIMIT / OFFSET)
+// logica de paginación en servidor
 $porPagina = 5;
-// Capturamos la página actual de la URL de forma segura (por defecto la 1)
+// capturamos la pagina actual de la URL de forma segura 
 $paginaActual = max(1, (int)($_GET['page'] ?? 1));
 $offset = ($paginaActual - 1) * $porPagina;
 
-// Contamos el total para calcular las páginas
+// contamos el total para calcular las páginas
 $totalTareas = $taskRepo->contarDisponibles($usuarioId, $nivelUsuario);
 $totalPaginas = max(1, (int)ceil($totalTareas / $porPagina));
 
-// Obtenemos solo las 5 tareas de esta página
+// obtenemos solo las 5 tareas de esta página
 $tareas = $taskRepo->obtenerDisponibles($usuarioId, $nivelUsuario, $porPagina, $offset);
 ?>
 <!DOCTYPE html>
@@ -85,7 +85,6 @@ $tareas = $taskRepo->obtenerDisponibles($usuarioId, $nivelUsuario, $porPagina, $
         <div>
             <h1>DevLevel v2</h1>
             <p>
-                <!-- CE 6.d: Escapado de salida (h) -->
                 Nivel Actual: <strong><?= h((string)$nivelUsuario) ?></strong> | 
                 Rol: <strong><?= h($authService->getRol()) ?></strong>
             </p>
@@ -109,7 +108,7 @@ $tareas = $taskRepo->obtenerDisponibles($usuarioId, $nivelUsuario, $porPagina, $
         <?php foreach ($tareas as $tarea): ?>
             <div class="tarea-card">
                 <div class="tarea-info">
-                    <!-- CE 6.d: Renderizado HTML seguro para evitar XSS -->
+                    <!-- renderizado HTML seguro para evitar XSS -->
                     <h3><?= h($tarea['titulo']) ?></h3>
                     <p><?= h($tarea['descripcion']) ?></p>
                     <div>
@@ -119,7 +118,7 @@ $tareas = $taskRepo->obtenerDisponibles($usuarioId, $nivelUsuario, $porPagina, $
                     </div>
                 </div>
                 
-                <!-- Formulario POST para completar la tarea de forma segura -->
+                <!-- formulario POST para completar la tarea de forma segura -->
                 <form method="POST" action="index.php" style="margin:0;">
                     <input type="hidden" name="completar_tarea_id" value="<?= h((string)$tarea['id']) ?>">
                     <input type="hidden" name="puntos_tarea" value="<?= h((string)$tarea['puntos']) ?>">
@@ -129,7 +128,7 @@ $tareas = $taskRepo->obtenerDisponibles($usuarioId, $nivelUsuario, $porPagina, $
         <?php endforeach; ?>
     <?php endif; ?>
 
-    <!-- CE 6.d: Controles de navegación de paginación -->
+    <!-- controles de navegación de paginación -->
     <div class="paginacion">
         <?php if ($paginaActual > 1): ?>
             <a href="index.php?page=<?= h((string)($paginaActual - 1)) ?>">← Anterior</a>
